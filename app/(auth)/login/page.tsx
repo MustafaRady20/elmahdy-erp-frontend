@@ -1,157 +1,169 @@
-"use client"
+"use client";
 
-import { useForm } from "react-hook-form"
-import { Mail, Lock, Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Card } from "@/components/ui/card"
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
+import Cookies from "js-cookie";
+import { BASE_URL } from "@/lib/constants";
 
 type FormData = {
-  username: string
-  password: string
-  remember?: boolean
-}
+  username: string;
+  password: string;
+};
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    defaultValues: { username: "", password: "", remember: false },
-  })
+  } = useForm<FormData>({ defaultValues: { username: "", password: "" } });
 
   async function onSubmit(data: FormData) {
-    // demo: replace with your authentication call
     try {
-      console.log("Submitting login", data)
-      // Example:
-      // await fetch("/api/auth/login", { method: "POST", body: JSON.stringify(data) })
-      // redirect on success...
-      alert("Demo login submitted — check console")
-    } catch (err) {
-      console.error(err)
-      alert("Login failed")
+      const response = await axios.post(`${BASE_URL}/auth/login`, {
+        phone: data.username,
+        password: data.password,
+      });
+
+      const result = response.data;
+
+      console.log(result);
+      
+      if (result.firstLogin) {
+        router.push(`/reset-password?phone=${data.username}`);
+        return;
+      }
+
+      Cookies.set("token", result.token, { expires: 7 });
+      Cookies.set("user", JSON.stringify({
+        role: result.employee.role,
+        empId: result.employee._id
+      }), { expires: 7 });
+
+      if (result.employee.role === "employee") {
+        router.push("/attendance");
+      } else if (result.employee.role === "manager") {
+        router.push("/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || "خطأ في تسجيل الدخول");
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-2 md:p-6 lg:p-8">
-            {/* Right - Form */}
-        <div className="flex items-center justify-center p-4">
-          <Card className="w-full max-w-md p-3 md:p-6 lg:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-indigo-600 flex items-center justify-center">
-                  {/* logo placeholder */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4" dir="rtl">
+      <div className="w-full max-w-md">
+        {/* Header Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl mb-6 shadow-2xl">
+            <Lock className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-white mb-3">مرحباً بك</h1>
+          <p className="text-blue-200 text-lg">سجل دخولك للمتابعة</p>
+        </div>
+
+        {/* Form Card */}
+        <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Phone Input */}
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium text-blue-100">
+                رقم الهاتف
+              </Label>
+              <div className="relative">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300">
+                  <Mail className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">تسجيل الدخول</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">ادخل بياناتك</p>
-                </div>
+                <Input
+                  id="username"
+                  {...register("username", { required: "رقم الهاتف مطلوب" })}
+                  placeholder="أدخل رقم الهاتف"
+                  className="pr-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-blue-300 focus:border-blue-400 focus:ring-blue-400 rounded-xl"
+                  dir="rtl"
+                />
               </div>
+              {errors.username && (
+                <div className="flex items-center gap-1 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.username.message}</span>
+                </div>
+              )}
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {/* username */}
-              <div>
-                <Label htmlFor="username" className="sr-only">
-                  رقم الهاتف
-                </Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-                    <Mail className="h-4 w-4" />
-                  </span>
-                  <Input
-                    id="username"
-                    placeholder="رقم الهاتف"
-                    aria-invalid={!!errors.username}
-                    className="pl-10"
-                    {...register("username", {
-                      required: "Username or email is required",
-                      minLength: { value: 3, message: "Too short" },
-                    })}
-                  />
+            {/* Password Input */}
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium text-blue-100">
+                كلمة المرور
+              </Label>
+              <div className="relative">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300">
+                  <Lock className="w-5 h-5" />
                 </div>
-                {errors.username && (
-                  <p role="alert" className="mt-1 text-sm text-red-600">
-                    {errors.username.message}
-                  </p>
-                )}
+                <Input
+                  id="password"
+                  type="password"
+                  {...register("password", { required: "كلمة المرور مطلوبة" })}
+                  placeholder="أدخل كلمة المرور"
+                  className="pr-10 h-12 bg-white/10 border-white/20 text-white placeholder:text-blue-300 focus:border-blue-400 focus:ring-blue-400 rounded-xl"
+                  dir="rtl"
+                />
               </div>
-
-              {/* password */}
-              <div>
-                <Label htmlFor="password" className="sr-only">
-                  كلمة المرور
-                </Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-3 flex items-center text-gray-400">
-                    <Lock className="h-4 w-4" />
-                  </span>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="كلمة المرور"
-                    aria-invalid={!!errors.password}
-                    className="pl-10"
-                    {...register("password", {
-                      required: "Password is required",
-                      minLength: { value: 6, message: "Password must be at least 6 characters" },
-                    })}
-                  />
+              {errors.password && (
+                <div className="flex items-center gap-1 text-red-400 text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>{errors.password.message}</span>
                 </div>
-                {errors.password && (
-                  <p role="alert" className="mt-1 text-sm text-red-600">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
+              )}
+            </div>
 
-              {/* remember + forgot
-              <div className="flex items-center justify-between">
-                <label className="inline-flex items-center gap-2 text-sm">
-                  <Checkbox id="remember" {...register("remember")} />
-                  <span className="text-sm text-gray-600 dark:text-gray-300">Remember me</span>
-                </label>
+            {/* Forgot Password Link */}
+            <div className="text-right">
+              <button
+                type="button"
+                className="text-sm text-blue-300 hover:text-blue-200 font-medium transition-colors"
+              >
+                نسيت كلمة المرور؟
+              </button>
+            </div>
 
-                <a
-                  href="#"
-                  className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
-                >
-                  Forgot password?
-                </a>
-              </div> */}
-
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Check className="h-4 w-4 animate-pulse" />
-                    Signing in...
-                  </span>
-                ) : (
-                  "Sign in"
-                )}
-              </Button>
-            </form>
-
-          
-          </Card>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              className="w-full h-14 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold text-lg rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed group transform hover:scale-105"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>جاري التحميل...</span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <span>تسجيل الدخول</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              )}
+            </Button>
+          </form>
         </div>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-blue-200 mt-6">
+          محمي بواسطة تشفير من الدرجة المصرفية 🔒
+        </p>
       </div>
-    
-  )
+
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
+    </div>
+  );
 }

@@ -8,28 +8,32 @@ import { Label } from "@/components/ui/label";
 import axios from "axios";
 import { BASE_URL } from "@/lib/constants";
 
-interface AddEmployeeFormProps {
-  onAdded: () => void;
-}
+type Employee = {
+  _id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  role: string;
+  type: "fixed" | "variable";
+  fixedSalary?: number;
+};
 
-export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
+export default function EditEmployeeForm({
+  employee,
+  onUpdated,
+}: {
+  employee: Employee;
+  onUpdated: () => void;
+}) {
   const [open, setOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    role: "employee",
-    type: "fixed",
-    fixedSalary: 0,
-  });
+  const [formData, setFormData] = useState<Employee>(employee);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${BASE_URL}/employees`, formData);
+      await axios.patch(`${BASE_URL}/employees/${employee._id}`, formData);
       setOpen(false);
-      setFormData({ name: "", phone: "", email: "", role: "employee", type: "fixed", fixedSalary: 0 });
-      onAdded();
+      onUpdated();
     } catch (error) {
       console.error(error);
     }
@@ -38,12 +42,14 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>إضافة موظف</Button>
+        <Button variant="outline" size="sm">تعديل</Button>
       </DialogTrigger>
+
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>إضافة موظف جديد</DialogTitle>
+          <DialogTitle>تعديل بيانات الموظف</DialogTitle>
         </DialogHeader>
+
         <form className="space-y-4 mt-2" onSubmit={handleSubmit}>
           <div>
             <Label>الاسم</Label>
@@ -53,6 +59,7 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
+
           <div>
             <Label>رقم الهاتف</Label>
             <Input
@@ -61,6 +68,7 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             />
           </div>
+
           <div>
             <Label>البريد الإلكتروني</Label>
             <Input
@@ -68,6 +76,7 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
+
           <div>
             <Label>الدور الوظيفي</Label>
             <select
@@ -80,15 +89,13 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               <option value="supervisor">مشرف</option>
             </select>
           </div>
+
           <div>
             <Label>نوع الراتب</Label>
             <select
               value={formData.type}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  type: e.target.value as "fixed" | "variable",
-                })
+                setFormData({ ...formData, type: e.target.value as "fixed" | "variable" })
               }
               className="w-full p-2 border rounded-md"
             >
@@ -96,12 +103,13 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               <option value="variable">متغير</option>
             </select>
           </div>
+
           {formData.type === "fixed" && (
             <div>
               <Label>الراتب الثابت</Label>
               <Input
                 type="number"
-                value={formData.fixedSalary}
+                value={formData.fixedSalary || 0}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -111,7 +119,8 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               />
             </div>
           )}
-          <Button type="submit">إضافة</Button>
+
+          <Button type="submit">تحديث</Button>
         </form>
       </DialogContent>
     </Dialog>

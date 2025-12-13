@@ -1,5 +1,4 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { CustomTrigger } from "@/components/custom-sidebat-trigger"
 import Header from "@/components/sharded/header"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 
@@ -9,7 +8,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <AppSidebar />
       <main className="w-full min-h-screen flex flex-col">
         <Header/>
-        {children}
+        <div className="p-5">
+          {children}
+        </div>
       </main>
     </SidebarProvider>
   )
