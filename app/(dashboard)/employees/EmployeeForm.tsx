@@ -90,11 +90,22 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">إضافة موظف</Button>
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+          إضافة موظف
+        </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl w-full overflow-y-auto p-6">
+      <DialogContent
+        className="
+    max-w-3xl w-[95vw]
+    max-h-[90vh]
+    overflow-y-auto
+    p-4
+  "
+      >
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold">إضافة موظف جديد</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            إضافة موظف جديد
+          </DialogTitle>
         </DialogHeader>
 
         <form
@@ -108,7 +119,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               placeholder="أدخل الاسم"
               required
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
             />
           </div>
 
@@ -118,7 +131,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
               placeholder="أدخل رقم الهاتف"
               required
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
             />
           </div>
 
@@ -127,7 +142,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Input
               placeholder="أدخل البريد الإلكتروني"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
             />
           </div>
 
@@ -136,7 +153,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Input
               type="date"
               value={formData.birthdate}
-              onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, birthdate: e.target.value })
+              }
             />
           </div>
 
@@ -145,7 +164,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Input
               placeholder="أدخل الرقم القومي"
               value={formData.nationalId}
-              onChange={(e) => setFormData({ ...formData, nationalId: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, nationalId: e.target.value })
+              }
             />
           </div>
 
@@ -154,7 +175,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Input
               placeholder="أدخل العنوان"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, address: e.target.value })
+              }
             />
           </div>
 
@@ -163,7 +186,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Label>الدور الوظيفي</Label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
               className="p-2 border rounded-md"
             >
               <option value="employee">موظف</option>
@@ -177,7 +202,10 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <select
               value={formData.type}
               onChange={(e) =>
-                setFormData({ ...formData, type: e.target.value as "fixed" | "variable" })
+                setFormData({
+                  ...formData,
+                  type: e.target.value as "fixed" | "variable",
+                })
               }
               className="p-2 border rounded-md"
             >
@@ -194,7 +222,10 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
                 placeholder="أدخل الراتب الثابت"
                 value={formData.fixedSalary}
                 onChange={(e) =>
-                  setFormData({ ...formData, fixedSalary: parseFloat(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    fixedSalary: parseFloat(e.target.value),
+                  })
                 }
               />
             </div>
@@ -204,7 +235,9 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
             <Label>الحالة</Label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
               className="p-2 border rounded-md"
             >
               <option value="active">نشط</option>
@@ -216,7 +249,10 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
           {[
             { label: "الصورة الشخصية", key: "profileImage" },
             { label: "صورة الرقم القومي", key: "nationalIdImage" },
-            { label: "صورة شهادة الخدمة العسكرية", key: "militaryServiceCertificateImage" },
+            {
+              label: "صورة شهادة الخدمة العسكرية",
+              key: "militaryServiceCertificateImage",
+            },
             { label: "تصريح العمل - الصورة", key: "permitImage" },
           ].map(({ label, key }) => (
             <div key={key} className="flex flex-col">
@@ -228,7 +264,6 @@ export default function AddEmployeeForm({ onAdded }: AddEmployeeFormProps) {
                   setImages({ ...images, [key]: e.target.files?.[0] })
                 }
               />
-            
             </div>
           ))}
 
