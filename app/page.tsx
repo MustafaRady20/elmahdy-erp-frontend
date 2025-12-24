@@ -7,7 +7,7 @@ export default function Home() {
   const router = useRouter()
 
  const [isRedirecting, setIsRedirecting] = useState(false);
-  const [user, setUser] = useState<{ role: "employee" | "manager" } | null>(null);
+  const [user, setUser] = useState<{ role: "employee" | "manager" | "supervisor" } | null>(null);
 
   useEffect(() => {
     const userCookie = Cookies.get("user");
@@ -27,7 +27,7 @@ export default function Home() {
     setTimeout(() => {
       if (user) {
         // Redirect based on role
-        if (user.role === "employee") {
+        if (user.role === "employee" || user.role === "supervisor") {
           router.replace("/attendance");
         } else if (user.role === "manager") {
           router.replace("/dashboard");
@@ -47,7 +47,7 @@ export default function Home() {
       <div className="text-center px-4">
         {/* Logo with animated glow */}
         <div className="mb-12 relative">
-          <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-30 animate-pulse"></div>
+          <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-30 animate-pulse pointer-events-none"></div>
           <div className="relative w-28 h-28 mx-auto bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl transform hover:scale-105 transition-transform duration-300">
             <svg 
               className="w-16 h-16 text-white" 

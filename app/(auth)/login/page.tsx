@@ -79,7 +79,7 @@ export default function LoginPage() {
                 رقم الهاتف
               </Label>
               <div className="relative">
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-blue-300 pointer-events-none">
                   <Mail className="w-5 h-5" />
                 </div>
                 <Input
@@ -162,8 +162,8 @@ export default function LoginPage() {
       </div>
 
       {/* Decorative elements */}
-      <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full opacity-20 blur-3xl"></div>
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
+      <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
     </div>
   );
 }
