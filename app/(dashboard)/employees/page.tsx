@@ -11,7 +11,7 @@ type Employee = {
   name: string;
   phone: string;
   email?: string;
-  role: string;
+  role: "employee" | "manager" | "supervisor";
   type: "fixed" | "variable";
   fixedSalary?: number;
 };
