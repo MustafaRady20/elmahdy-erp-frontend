@@ -89,7 +89,7 @@ export default function ResetPasswordPage() {
                 كلمة المرور الجديدة
               </Label>
               <div className="relative">
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 pointer-events-none">
                   <Lock className="w-5 h-5" />
                 </div>
                 <Input
@@ -105,7 +105,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-100 transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-100 transition-colors pointer-events-none"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-100 transition-colors"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-100 transition-colors pointer-events-none"
                 >
                   {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -192,8 +192,8 @@ export default function ResetPasswordPage() {
       </div>
 
       {/* Decorative elements */}
-      <div className="absolute top-10 left-10 w-72 h-72 bg-purple-500 rounded-full opacity-20 blur-3xl"></div>
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full opacity-20 blur-3xl"></div>
+      <div className="absolute top-10 left-10 w-72 h-72 bg-purple-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-500 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
     </div>
   );
 }
