@@ -53,6 +53,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { BASE_URL } from '@/lib/constants';
 
 /* ===================== Types ===================== */
 
@@ -72,8 +73,8 @@ type VipRevenue = {
 /* ===================== Page ===================== */
 
 export default function VipRevenuesPage() {
-  const API = 'http://localhost:8080/vip-revenues';
-  const EMP_API = 'http://localhost:8080/employees';
+  const API = `${BASE_URL}/vip-revenues`;
+  const EMP_API = `${BASE_URL}http://localhost:8080/employees`;
 
   /* ===================== State ===================== */
 
