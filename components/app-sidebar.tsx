@@ -39,10 +39,9 @@ const menuByRole: Record<string, any[]> = {
       icon: Calendar,
     },
     {
-      title: "الحجوزات VIP",
-      url: "/reservation",
+      title: "VIP",
       icon: Inbox,
-      children: [{ title: "الايرادات", url: "/vip-revenue" }],
+      children: [{ title: "الايرادات", url: "/vip-revenue" },{ title: "الحجوزات", url: "/reservation" }],
     },
     { title: "لوائح وقوانين الشركة", url: "/rules", icon: FileText },
     { title: "الرواتب الشهرية", url: "/salaries", icon: FileText },
