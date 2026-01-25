@@ -37,6 +37,9 @@ import {
   ChevronRight,
   Filter,
   X,
+  Edit,
+  Trash2,
+  Coins,
 } from "lucide-react";
 
 interface EmployeeRevenue {
@@ -46,12 +49,23 @@ interface EmployeeRevenue {
     _id: string;
     name: string;
   };
+  currency?: {
+    _id: string;
+    name: string;
+    code: string;
+  };
 }
 
 interface EmployeeRevenueDetail {
   _id: string;
   activity: { _id: string; name: string };
   amount: number;
+  EGPamount?: number;
+  currency?: {
+    _id: string;
+    name: string;
+    code: string;
+  };
   date: string;
 }
 
@@ -63,6 +77,12 @@ interface Employee {
 interface Activity {
   _id: string;
   name: string;
+}
+
+interface Currency {
+  _id: string;
+  name: string;
+  code: string;
 }
 
 export default function RevenuePage() {
@@ -85,14 +105,34 @@ export default function RevenuePage() {
   // For new revenue popup
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [newEmployee, setNewEmployee] = useState<string | null>(null);
   const [newActivity, setNewActivity] = useState<string | null>(null);
+  const [newCurrency, setNewCurrency] = useState<string | null>(null);
   const [newAmount, setNewAmount] = useState<number>(0);
   const [newDate, setNewDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
   const [saving, setSaving] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+
+  // For edit revenue
+  const [editingRevenue, setEditingRevenue] = useState<EmployeeRevenueDetail | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editActivity, setEditActivity] = useState<string>("");
+  const [editCurrency, setEditCurrency] = useState<string>("");
+  const [editAmount, setEditAmount] = useState<number>(0);
+  const [editDate, setEditDate] = useState<string>("");
+  const [updating, setUpdating] = useState(false);
+
+  // For add revenue to specific employee
+  const [addEmployeeRevenueDialogOpen, setAddEmployeeRevenueDialogOpen] = useState(false);
+  const [addEmployeeActivity, setAddEmployeeActivity] = useState<string | null>(null);
+  const [addEmployeeCurrency, setAddEmployeeCurrency] = useState<string | null>(null);
+  const [addEmployeeAmount, setAddEmployeeAmount] = useState<number>(0);
+  const [addEmployeeDate, setAddEmployeeDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
 
   const selectStyles = {
     control: (styles: any, { isFocused }: any) => ({
@@ -193,22 +233,24 @@ export default function RevenuePage() {
     }
   };
 
-  const fetchEmployeesAndActivities = async () => {
+  const fetchEmployeesActivitiesAndCurrencies = async () => {
     try {
-      const [empRes, actRes] = await Promise.all([
+      const [empRes, actRes, currRes] = await Promise.all([
         axios.get(`${BASE_URL}/employees`),
         axios.get(`${BASE_URL}/activities`),
+        axios.get(`${BASE_URL}/currencies`),
       ]);
       setEmployees(empRes.data || []);
       setActivities(actRes.data || []);
+      setCurrencies(currRes.data || []);
     } catch (error) {
-      console.error("خطأ في جلب الموظفين أو الأنشطة:", error);
+      console.error("خطأ في جلب الموظفين أو الأنشطة أو العملات:", error);
     }
   };
 
   useEffect(() => {
     fetchData();
-    fetchEmployeesAndActivities();
+    fetchEmployeesActivitiesAndCurrencies();
   }, [period, filterYear, filterMonth, filterDate]);
 
   const openEmployeeDetails = (emp: EmployeeRevenue) => {
@@ -224,7 +266,7 @@ export default function RevenuePage() {
   };
 
   const handleSaveNewRevenue = async () => {
-    if (!newEmployee || !newActivity || !newAmount) {
+    if (!newEmployee || !newActivity || !newCurrency || !newAmount) {
       alert("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
@@ -233,14 +275,100 @@ export default function RevenuePage() {
       await axios.post(`${BASE_URL}/emp-revenue`, {
         employee: newEmployee,
         activity: newActivity,
+        currency: newCurrency,
         amount: newAmount,
         date: newDate,
       });
       setNewEmployee(null);
       setNewActivity(null);
+      setNewCurrency(null);
       setNewAmount(0);
       setNewDate(new Date().toISOString().split("T")[0]);
       setAddDialogOpen(false);
+      fetchData(); // refresh main table
+      alert("تم إضافة الإيراد بنجاح");
+    } catch (error) {
+      console.error("خطأ في حفظ الإيراد:", error);
+      alert("حدث خطأ أثناء الحفظ");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditRevenue = (revenue: EmployeeRevenueDetail) => {
+    setEditingRevenue(revenue);
+    setEditActivity(revenue.activity._id);
+    setEditCurrency(revenue.currency?._id || "");
+    setEditAmount(revenue.amount);
+    setEditDate(revenue.date.split("T")[0]);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateRevenue = async () => {
+    if (!editingRevenue || !editActivity || !editCurrency || !editAmount) {
+      alert("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    setUpdating(true);
+    try {
+      await axios.patch(`${BASE_URL}/emp-revenue/${editingRevenue._id}`, {
+        activity: editActivity,
+        currency: editCurrency,
+        amount: editAmount,
+        date: editDate,
+      });
+      setEditDialogOpen(false);
+      setEditingRevenue(null);
+      if (selectedEmployee) {
+        fetchDetails(selectedEmployee.employee._id, page);
+      }
+      fetchData(); // refresh main table
+      alert("تم تحديث الإيراد بنجاح");
+    } catch (error) {
+      console.error("خطأ في تحديث الإيراد:", error);
+      alert("حدث خطأ أثناء التحديث");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleDeleteRevenue = async (revenueId: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذا الإيراد؟")) {
+      return;
+    }
+    try {
+      await axios.delete(`${BASE_URL}/emp-revenue/${revenueId}`);
+      if (selectedEmployee) {
+        fetchDetails(selectedEmployee.employee._id, page);
+      }
+      fetchData(); // refresh main table
+      alert("تم حذف الإيراد بنجاح");
+    } catch (error) {
+      console.error("خطأ في حذف الإيراد:", error);
+      alert("حدث خطأ أثناء الحذف");
+    }
+  };
+
+  const handleAddEmployeeRevenue = async () => {
+    if (!selectedEmployee || !addEmployeeActivity || !addEmployeeCurrency || !addEmployeeAmount) {
+      alert("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+    setSaving(true);
+    try {
+      await axios.post(`${BASE_URL}/emp-revenue`, {
+        employee: selectedEmployee.employee._id,
+        activity: addEmployeeActivity,
+        currency: addEmployeeCurrency,
+        amount: addEmployeeAmount,
+        date: addEmployeeDate,
+      });
+      setAddEmployeeActivity(null);
+      setAddEmployeeCurrency(null);
+      setAddEmployeeAmount(0);
+      setAddEmployeeDate(new Date().toISOString().split("T")[0]);
+      setAddEmployeeRevenueDialogOpen(false);
+      fetchDetails(selectedEmployee.employee._id, page);
       fetchData(); // refresh main table
       alert("تم إضافة الإيراد بنجاح");
     } catch (error) {
@@ -349,7 +477,6 @@ export default function RevenuePage() {
                     placeholder="اختر الموظف"
                     styles={selectStyles}
                     isSearchable
-                   
                   />
                 </div>
 
@@ -373,7 +500,34 @@ export default function RevenuePage() {
                     placeholder="اختر النشاط"
                     styles={selectStyles}
                     isSearchable
-                   
+                  />
+                </div>
+
+                {/* Currency Select */}
+                <div className="space-y-2">
+                  <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <Coins className="w-4 h-4" />
+                    العملة <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    options={currencies.map((c) => ({ 
+                      value: c._id, 
+                      label: `${c.name} (${c.code})` 
+                    }))}
+                    value={
+                      newCurrency
+                        ? {
+                            value: newCurrency,
+                            label: currencies.find((c) => c._id === newCurrency)
+                              ? `${currencies.find((c) => c._id === newCurrency)?.name} (${currencies.find((c) => c._id === newCurrency)?.code})`
+                              : "",
+                          }
+                        : null
+                    }
+                    onChange={(val: any) => setNewCurrency(val.value)}
+                    placeholder="اختر العملة"
+                    styles={selectStyles}
+                    isSearchable
                   />
                 </div>
 
@@ -530,7 +684,6 @@ export default function RevenuePage() {
                   value={{ value: period, label: getPeriodLabel() }}
                   onChange={(val: any) => setPeriod(val.value)}
                   styles={selectStyles}
-                
                 />
               </div>
 
@@ -546,7 +699,6 @@ export default function RevenuePage() {
                   placeholder="اختر السنة"
                   styles={selectStyles}
                   isClearable
-                
                 />
               </div>
 
@@ -566,7 +718,6 @@ export default function RevenuePage() {
                   placeholder="اختر الشهر"
                   styles={selectStyles}
                   isClearable
-                 
                 />
               </div>
 
@@ -703,11 +854,141 @@ export default function RevenuePage() {
                                 عرض التفاصيل
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                               <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
-                                  تفاصيل الإيرادات - {emp.employee.name}
-                                </DialogTitle>
+                                <div className="flex items-center justify-between">
+                                  <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                                    تفاصيل الإيرادات - {emp.employee.name}
+                                  </DialogTitle>
+                                  <Dialog open={addEmployeeRevenueDialogOpen} onOpenChange={setAddEmployeeRevenueDialogOpen}>
+                                    <DialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white"
+                                      >
+                                        <Plus className="w-4 h-4 ml-2" />
+                                        إضافة إيراد
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                                      <DialogHeader>
+                                        <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                                          إضافة إيراد لـ {emp.employee.name}
+                                        </DialogTitle>
+                                      </DialogHeader>
+
+                                      <div className="flex flex-col gap-4 mt-4">
+                                        {/* Activity Select */}
+                                        <div className="space-y-2">
+                                          <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                            <ActivityIcon className="w-4 h-4" />
+                                            النشاط <span className="text-red-500">*</span>
+                                          </Label>
+                                          <Select
+                                            options={activities.map((a) => ({ value: a._id, label: a.name }))}
+                                            value={
+                                              addEmployeeActivity
+                                                ? {
+                                                    value: addEmployeeActivity,
+                                                    label: activities.find((a) => a._id === addEmployeeActivity)?.name || "",
+                                                  }
+                                                : null
+                                            }
+                                            onChange={(val: any) => setAddEmployeeActivity(val.value)}
+                                            placeholder="اختر النشاط"
+                                            styles={selectStyles}
+                                            isSearchable
+                                          />
+                                        </div>
+
+                                        {/* Currency Select */}
+                                        <div className="space-y-2">
+                                          <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                            <Coins className="w-4 h-4" />
+                                            العملة <span className="text-red-500">*</span>
+                                          </Label>
+                                          <Select
+                                            options={currencies.map((c) => ({ 
+                                              value: c._id, 
+                                              label: `${c.name} (${c.code})` 
+                                            }))}
+                                            value={
+                                              addEmployeeCurrency
+                                                ? {
+                                                    value: addEmployeeCurrency,
+                                                    label: currencies.find((c) => c._id === addEmployeeCurrency)
+                                                      ? `${currencies.find((c) => c._id === addEmployeeCurrency)?.name} (${currencies.find((c) => c._id === addEmployeeCurrency)?.code})`
+                                                      : "",
+                                                  }
+                                                : null
+                                            }
+                                            onChange={(val: any) => setAddEmployeeCurrency(val.value)}
+                                            placeholder="اختر العملة"
+                                            styles={selectStyles}
+                                            isSearchable
+                                          />
+                                        </div>
+
+                                        {/* Amount Input */}
+                                        <div className="space-y-2">
+                                          <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                            <DollarSign className="w-4 h-4" />
+                                            المبلغ <span className="text-red-500">*</span>
+                                          </Label>
+                                          <Input
+                                            type="number"
+                                            placeholder="أدخل المبلغ"
+                                            value={addEmployeeAmount || ""}
+                                            onChange={(e) => setAddEmployeeAmount(Number(e.target.value))}
+                                            className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                                          />
+                                        </div>
+
+                                        {/* Date Input */}
+                                        <div className="space-y-2">
+                                          <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                            <Calendar className="w-4 h-4" />
+                                            التاريخ
+                                          </Label>
+                                          <Input
+                                            type="date"
+                                            value={addEmployeeDate}
+                                            onChange={(e) => setAddEmployeeDate(e.target.value)}
+                                            className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+                                          />
+                                        </div>
+
+                                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                          <DialogClose asChild>
+                                            <Button
+                                              variant="outline"
+                                              className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            >
+                                              إلغاء
+                                            </Button>
+                                          </DialogClose>
+                                          <Button
+                                            onClick={handleAddEmployeeRevenue}
+                                            disabled={saving}
+                                            className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white"
+                                          >
+                                            {saving ? (
+                                              <>
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
+                                                جاري الحفظ...
+                                              </>
+                                            ) : (
+                                              <>
+                                                <Plus className="w-4 h-4 ml-2" />
+                                                حفظ
+                                              </>
+                                            )}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
                               </DialogHeader>
 
                               {loadingDetails ? (
@@ -732,7 +1013,13 @@ export default function RevenuePage() {
                                             النشاط
                                           </TableHead>
                                           <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">
+                                            المبلغ (جنيه مصري)
+                                          </TableHead>
+                                          <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">
                                             المبلغ
+                                          </TableHead>
+                                          <TableHead className="text-center font-semibold text-slate-700 dark:text-slate-300">
+                                            الإجراءات
                                           </TableHead>
                                         </TableRow>
                                       </TableHeader>
@@ -754,11 +1041,39 @@ export default function RevenuePage() {
                                             </TableCell>
                                             <TableCell className="text-center">
                                               <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                                                {d.amount.toLocaleString()}
+                                                {d.EGPamount?.toLocaleString()}
                                               </span>
                                               <span className="text-slate-500 dark:text-slate-500 text-sm mr-1">
                                                 جنيه
                                               </span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                              <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                {d.amount.toLocaleString()}
+                                              </span>
+                                              <span className="text-slate-500 dark:text-slate-500 text-sm mr-1">
+                                                {d.currency?.code}
+                                              </span>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                              <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                  onClick={() => handleEditRevenue(d)}
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-500/20"
+                                                >
+                                                  <Edit className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                  onClick={() => handleDeleteRevenue(d._id)}
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-500/20"
+                                                >
+                                                  <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                              </div>
                                             </TableCell>
                                           </TableRow>
                                         ))}
@@ -806,6 +1121,130 @@ export default function RevenuePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Revenue Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-md bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                <Edit className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              تعديل الإيراد
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4 mt-4">
+            {/* Activity Select */}
+            <div className="space-y-2">
+              <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <ActivityIcon className="w-4 h-4" />
+                النشاط <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                options={activities.map((a) => ({ value: a._id, label: a.name }))}
+                value={
+                  editActivity
+                    ? {
+                        value: editActivity,
+                        label: activities.find((a) => a._id === editActivity)?.name || "",
+                      }
+                    : null
+                }
+                onChange={(val: any) => setEditActivity(val.value)}
+                placeholder="اختر النشاط"
+                styles={selectStyles}
+                isSearchable
+              />
+            </div>
+
+            {/* Currency Select */}
+            <div className="space-y-2">
+              <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                العملة <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                options={currencies.map((c) => ({ 
+                  value: c._id, 
+                  label: `${c.name} (${c.code})` 
+                }))}
+                value={
+                  editCurrency
+                    ? {
+                        value: editCurrency,
+                        label: currencies.find((c) => c._id === editCurrency)
+                          ? `${currencies.find((c) => c._id === editCurrency)?.name} (${currencies.find((c) => c._id === editCurrency)?.code})`
+                          : "",
+                      }
+                    : null
+                }
+                onChange={(val: any) => setEditCurrency(val.value)}
+                placeholder="اختر العملة"
+                styles={selectStyles}
+                isSearchable
+              />
+            </div>
+
+            {/* Amount Input */}
+            <div className="space-y-2">
+              <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                المبلغ <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="number"
+                placeholder="أدخل المبلغ"
+                value={editAmount || ""}
+                onChange={(e) => setEditAmount(Number(e.target.value))}
+                className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            {/* Date Input */}
+            <div className="space-y-2">
+              <Label className="text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                التاريخ
+              </Label>
+              <Input
+                type="date"
+                value={editDate}
+                onChange={(e) => setEditDate(e.target.value)}
+                className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <DialogClose asChild>
+                <Button
+                  variant="outline"
+                  className="bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                >
+                  إلغاء
+                </Button>
+              </DialogClose>
+              <Button
+                onClick={handleUpdateRevenue}
+                disabled={updating}
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white"
+              >
+                {updating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin ml-2"></div>
+                    جاري التحديث...
+                  </>
+                ) : (
+                  <>
+                    <Edit className="w-4 h-4 ml-2" />
+                    تحديث
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

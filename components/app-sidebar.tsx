@@ -53,6 +53,7 @@ const menuByRole: Record<string, any[]> = {
         { title: "الانشطة", url: "/settings/activities" },
         { title: "الفروع", url: "/settings/branches" },
         { title: "الاصناف", url: "/settings/categories" },
+        { title: "العملات واسعار الصرف", url: "/currency" },
       ],
     },
   ],
