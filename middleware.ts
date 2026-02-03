@@ -14,8 +14,8 @@ export function middleware(req: NextRequest) {
   const userCookie = req.cookies.get("user")?.value;
 
   if (!userCookie) {
-    return NextResponse.redirect(new URL("/login", req.url));
-        // return NextResponse.next();
+    // return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.next();
 
   }
 
@@ -24,8 +24,8 @@ export function middleware(req: NextRequest) {
   try {
     user = JSON.parse(userCookie);
   } catch (err) {
-    return NextResponse.redirect(new URL("/login", req.url));
-        // return NextResponse.next();
+    // return NextResponse.redirect(new URL("/login", req.url));
+        return NextResponse.next();
 
   }
 
