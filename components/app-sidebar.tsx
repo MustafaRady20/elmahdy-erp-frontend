@@ -31,6 +31,7 @@ const menuByRole: Record<string, any[]> = {
   manager: [
     { title: "الرئيسية", url: "/dashboard", icon: Home },
     { title: "الموظفين", url: "/employees", icon: Inbox },
+    { title: "الشركاء", url: "/partners", icon: Inbox },
     { title: "الحضور", url: "/attendance", icon: Clock },
     { title: "الإيرادات", url: "/revenues", icon: Calendar },
     {

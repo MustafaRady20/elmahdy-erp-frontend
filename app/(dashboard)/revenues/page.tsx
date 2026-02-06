@@ -915,7 +915,7 @@ export default function RevenuePage() {
                                 عرض التفاصيل
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className=" !max-w-none !w-[50vw] max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                            <DialogContent className="w-[95vw] sm:!w-[95vw] md:!w-[80vw] lg:!w-[80vw] xl:!w-[70vw] !max-w-none max-h-[70vh] overflow-y-auto bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
                               <DialogHeader>
                                 <div className="flex items-center justify-between">
                                   <DialogTitle className="text-2xl font-bold text-slate-900 dark:text-white">
