@@ -119,12 +119,16 @@ export default function CafeDetailsPage({
         yearlyRes.json(),
       ]);
 
+      console.log("Revenue data:", { dailyData, weeklyData, monthlyData, yearlyData });
+
       setRevenue({
         daily: dailyData[0]?.totalRevenue || 0,
         weekly: weeklyData[0]?.totalRevenue || 0,
         monthly: monthlyData[0]?.totalRevenue || 0,
         yearly: yearlyData[0]?.totalRevenue || 0,
       });
+
+     
     } catch (err) {
       console.error("Failed to load revenue", err);
     } finally {
