@@ -19,11 +19,18 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import {
-  Plus, Pencil, Trash2, Star, Crown,
-  DollarSign, X, Loader2, Package, CheckCircle2,
+  Plus,
+  Pencil,
+  Trash2,
+  Star,
+  Crown,
+  DollarSign,
+  X,
+  Loader2,
+  Package,
+  CheckCircle2,
 } from "lucide-react";
 import { BASE_URL } from "@/lib/constants";
-
 
 interface LocalizedContent {
   name: string;
@@ -50,8 +57,6 @@ const EMPTY_FORM: PackageFormData = {
   premium: false,
 };
 
-
-
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
@@ -64,15 +69,24 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 const api = {
   getAll: () => apiFetch<TravelPackage[]>("/packages"),
   create: (body: PackageFormData) =>
-    apiFetch<TravelPackage>("/packages", { method: "POST", body: JSON.stringify(body) }),
+    apiFetch<TravelPackage>("/packages", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   update: (id: string, body: Partial<PackageFormData>) =>
-    apiFetch<TravelPackage>(`/packages/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    apiFetch<TravelPackage>(`/packages/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
   remove: (id: string) =>
     apiFetch<{ message: string }>(`/packages/${id}`, { method: "DELETE" }),
 };
 
-
-function FeatureTagInput({ features, onChange, dir }: {
+function FeatureTagInput({
+  features,
+  onChange,
+  dir,
+}: {
   features: string[];
   onChange: (f: string[]) => void;
   dir?: "ltr" | "rtl";
@@ -80,25 +94,50 @@ function FeatureTagInput({ features, onChange, dir }: {
   const [input, setInput] = useState("");
   const add = () => {
     const v = input.trim();
-    if (v && !features.includes(v)) { onChange([...features, v]); setInput(""); }
+    if (v && !features.includes(v)) {
+      onChange([...features, v]);
+      setInput("");
+    }
   };
   return (
     <div className="space-y-2" dir={dir}>
       <div className="flex gap-2">
-        <Input value={input} onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
-          placeholder="Type a feature, press Enter" className="flex-1 h-9" />
-        <Button type="button" variant="outline" size="sm" className="h-9 px-3" onClick={add}>
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder="Type a feature, press Enter"
+          className="flex-1 h-9"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 px-3"
+          onClick={add}
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
       {features.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {features.map((f, i) => (
-            <Badge key={i} variant="secondary" className="gap-1 pr-1 font-normal text-xs h-6">
+            <Badge
+              key={i}
+              variant="secondary"
+              className="gap-1 pr-1 font-normal text-xs h-6"
+            >
               {f}
-              <button type="button" onClick={() => onChange(features.filter((_, j) => j !== i))}
-                className="ml-0.5 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity">
+              <button
+                type="button"
+                onClick={() => onChange(features.filter((_, j) => j !== i))}
+                className="ml-0.5 opacity-50 hover:opacity-100 hover:text-destructive transition-opacity"
+              >
                 <X className="h-3 w-3" />
               </button>
             </Badge>
@@ -109,8 +148,12 @@ function FeatureTagInput({ features, onChange, dir }: {
   );
 }
 
-
-function EditDialog({ open, onOpenChange, initial, onSave }: {
+function EditDialog({
+  open,
+  onOpenChange,
+  initial,
+  onSave,
+}: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   initial?: TravelPackage;
@@ -121,11 +164,17 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
 
   useEffect(() => {
     if (open) {
-      setForm(initial
-        ? { ar: { ...initial.ar, features: [...initial.ar.features] },
-            en: { ...initial.en, features: [...initial.en.features] },
-            price: initial.price, popular: initial.popular, premium: initial.premium }
-        : EMPTY_FORM);
+      setForm(
+        initial
+          ? {
+              ar: { ...initial.ar, features: [...initial.ar.features] },
+              en: { ...initial.en, features: [...initial.en.features] },
+              price: initial.price,
+              popular: initial.popular,
+              premium: initial.premium,
+            }
+          : EMPTY_FORM,
+      );
     }
   }, [open, initial]);
 
@@ -138,9 +187,14 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
       return;
     }
     setSaving(true);
-    try { await onSave(form); onOpenChange(false); }
-    catch { toast.error("Failed to save."); }
-    finally { setSaving(false); }
+    try {
+      await onSave(form);
+      onOpenChange(false);
+    } catch {
+      toast.error("Failed to save.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -153,22 +207,37 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
         <div className="space-y-4 py-1">
           <div className="grid grid-cols-3 gap-3 items-end">
             <div className="space-y-1.5">
-              <Label htmlFor="price" className="text-sm">Price *</Label>
+              <Label htmlFor="price" className="text-sm">
+                Price *
+              </Label>
               <div className="relative">
                 <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input id="price" type="number" min={0} className="pl-8 h-9"
+                <Input
+                  id="price"
+                  type="number"
+                  min={0}
+                  className="pl-8 h-9"
                   value={form.price}
-                  onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))} />
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                  }
+                />
               </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer rounded-md border px-3 py-2 h-9">
-              <Switch checked={form.popular} onCheckedChange={(v) => setForm((f) => ({ ...f, popular: v }))} />
+              <Switch
+                checked={form.popular}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, popular: v }))}
+              />
               <span className="text-sm flex items-center gap-1.5">
                 <Star className="h-3.5 w-3.5 text-amber-500" /> Popular
               </span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer rounded-md border px-3 py-2 h-9">
-              <Switch checked={form.premium} onCheckedChange={(v) => setForm((f) => ({ ...f, premium: v }))} />
+              <Switch
+                checked={form.premium}
+                onCheckedChange={(v) => setForm((f) => ({ ...f, premium: v }))}
+              />
               <span className="text-sm flex items-center gap-1.5">
                 <Crown className="h-3.5 w-3.5 text-violet-500" /> Premium
               </span>
@@ -179,31 +248,47 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
 
           <Tabs defaultValue="en">
             <TabsList className="w-full h-9">
-              <TabsTrigger value="en" className="flex-1 text-sm">🇬🇧 English</TabsTrigger>
-              <TabsTrigger value="ar" className="flex-1 text-sm">🇸🇦 Arabic</TabsTrigger>
+              <TabsTrigger value="en" className="flex-1 text-sm">
+                🇬🇧 English
+              </TabsTrigger>
+              <TabsTrigger value="ar" className="flex-1 text-sm">
+                🇸🇦 Arabic
+              </TabsTrigger>
             </TabsList>
             {(["en", "ar"] as const).map((lang) => (
               <TabsContent key={lang} value={lang} className="space-y-3 pt-3">
                 <div className="space-y-1.5">
                   <Label className="text-sm">Name *</Label>
-                  <Input dir={lang === "ar" ? "rtl" : "ltr"} className="h-9"
+                  <Input
+                    dir={lang === "ar" ? "rtl" : "ltr"}
+                    className="h-9"
                     value={form[lang].name}
                     onChange={(e) => setLang(lang)({ name: e.target.value })}
-                    placeholder={lang === "ar" ? "اسم الباقة" : "Package name"} />
+                    placeholder={lang === "ar" ? "اسم الباقة" : "Package name"}
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-sm">Description</Label>
-                  <Textarea dir={lang === "ar" ? "rtl" : "ltr"} rows={2}
+                  <Textarea
+                    dir={lang === "ar" ? "rtl" : "ltr"}
+                    rows={2}
                     className="resize-none text-sm"
                     value={form[lang].description}
-                    onChange={(e) => setLang(lang)({ description: e.target.value })}
-                    placeholder={lang === "ar" ? "وصف الباقة" : "Short description…"} />
+                    onChange={(e) =>
+                      setLang(lang)({ description: e.target.value })
+                    }
+                    placeholder={
+                      lang === "ar" ? "وصف الباقة" : "Short description…"
+                    }
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-sm">Features</Label>
-                  <FeatureTagInput dir={lang === "ar" ? "rtl" : "ltr"}
+                  <FeatureTagInput
+                    dir={lang === "ar" ? "rtl" : "ltr"}
                     features={form[lang].features}
-                    onChange={(features) => setLang(lang)({ features })} />
+                    onChange={(features) => setLang(lang)({ features })}
+                  />
                 </div>
               </TabsContent>
             ))}
@@ -211,7 +296,13 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancel
+          </Button>
           <Button size="sm" onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
             {initial ? "Save changes" : "Create"}
@@ -222,7 +313,6 @@ function EditDialog({ open, onOpenChange, initial, onSave }: {
   );
 }
 
-
 export default function PackagesPage() {
   const [packages, setPackages] = useState<TravelPackage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -232,24 +322,40 @@ export default function PackagesPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setPackages(await api.getAll()); }
-    catch { toast.error("Failed to load packages."); }
-    finally { setLoading(false); }
+    try {
+      setPackages(await api.getAll());
+    } catch {
+      toast.error("Failed to load packages.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-  const openCreate = () => { setEditing(undefined); setDialogOpen(true); };
-  const openEdit = (pkg: TravelPackage) => { setEditing(pkg); setDialogOpen(true); };
+  const openCreate = () => {
+    setEditing(undefined);
+    setDialogOpen(true);
+  };
+  const openEdit = (pkg: TravelPackage) => {
+    setEditing(pkg);
+    setDialogOpen(true);
+  };
 
   const handleSave = async (data: PackageFormData) => {
     if (editing) {
       const updated = await api.update(editing._id, data);
-      setPackages((prev) => prev.map((p) => (p._id === updated._id ? updated : p)));
+      setPackages((prev) =>
+        prev.map((p) => (p._id === updated._id ? updated : p)),
+      );
       toast.success("Package updated.");
     } else {
       const created = await api.create(data);
-      setPackages((prev) => [...prev, created].sort((a, b) => a.price - b.price));
+      setPackages((prev) =>
+        [...prev, created].sort((a, b) => a.price - b.price),
+      );
       toast.success("Package created.");
     }
   };
@@ -261,13 +367,15 @@ export default function PackagesPage() {
       await api.remove(pkg._id);
       setPackages((prev) => prev.filter((p) => p._id !== pkg._id));
       toast.success("Deleted.");
-    } catch { toast.error("Failed to delete."); }
-    finally { setDeletingId(null); }
+    } catch {
+      toast.error("Failed to delete.");
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -288,7 +396,10 @@ export default function PackagesPage() {
       <div className="divide-y rounded-lg border">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between px-4 py-3.5">
+            <div
+              key={i}
+              className="flex items-center justify-between px-4 py-3.5"
+            >
               <div className="space-y-1.5">
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-3 w-24" />
@@ -300,20 +411,30 @@ export default function PackagesPage() {
           <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
             <Package className="h-8 w-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">No packages yet.</p>
-            <Button variant="outline" size="sm" onClick={openCreate} className="mt-1 gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={openCreate}
+              className="mt-1 gap-1.5"
+            >
               <Plus className="h-3.5 w-3.5" /> Add your first package
             </Button>
           </div>
         ) : (
           packages.map((pkg) => (
-            <div key={pkg._id}
-              className="flex items-center gap-4 px-4 py-3.5 hover:bg-muted/40 transition-colors group">
-
+            <div
+              key={pkg._id}
+              className="flex items-center gap-4 px-4 py-3.5 hover:bg-muted/40 transition-colors group"
+            >
               {/* Name + meta */}
               <div className="flex-1 min-w-0 space-y-0.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-sm truncate">{pkg.en.name}</span>
-                  <span className="text-xs text-muted-foreground" dir="rtl">{pkg.ar.name}</span>
+                  <span className="font-medium text-sm truncate">
+                    {pkg.en.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground" dir="rtl">
+                    {pkg.ar.name}
+                  </span>
                   {pkg.popular && (
                     <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
                       <Star className="h-3 w-3" /> Popular
@@ -328,7 +449,10 @@ export default function PackagesPage() {
                 {pkg.en.features.length > 0 && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {pkg.en.features.slice(0, 4).map((f, i) => (
-                      <span key={i} className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <span
+                        key={i}
+                        className="flex items-center gap-1 text-xs text-muted-foreground"
+                      >
                         <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
                         {f}
                       </span>
@@ -348,18 +472,27 @@ export default function PackagesPage() {
               </span>
 
               {/* Actions */}
-              <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="ghost" size="icon" className="h-7 w-7"
-                  onClick={() => openEdit(pkg)}>
+              <div className="flex items-center gap-1 shrink-0  transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => openEdit(pkg)}
+                >
                   <Pencil className="h-3.5 w-3.5" />
                 </Button>
-                <Button variant="ghost" size="icon"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={() => handleDelete(pkg)}
-                  disabled={deletingId === pkg._id}>
-                  {deletingId === pkg._id
-                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    : <Trash2 className="h-3.5 w-3.5" />}
+                  disabled={deletingId === pkg._id}
+                >
+                  {deletingId === pkg._id ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
                 </Button>
               </div>
             </div>
