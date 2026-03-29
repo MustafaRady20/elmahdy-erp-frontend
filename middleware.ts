@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/login", "/reset-password",];
+  const publicPaths = ["/login", "/reset-password","/settings/packages"];
   const empPaths = ["/attendance", "/rules"];
 
   if (publicPaths.includes(pathname)) {
