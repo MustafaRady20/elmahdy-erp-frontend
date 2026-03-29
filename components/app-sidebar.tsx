@@ -53,6 +53,7 @@ const menuByRole: Record<string, any[]> = {
       children: [
         { title: "الانشطة", url: "/settings/activities" },
         { title: "الفروع", url: "/settings/branches" },
+        { title: "الباقات", url: "/settings/packages" },
         { title: "الاصناف", url: "/settings/categories" },
         { title: "العملات واسعار الصرف", url: "/currency" },
       ],
