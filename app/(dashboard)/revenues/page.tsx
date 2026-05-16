@@ -1200,7 +1200,7 @@ export default function RevenuePage() {
                                           </TableCell>
                                           <TableCell className="text-center">
                                             <Badge className="bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30">
-                                              {d.activity.name}
+                                              {d.activity?.name}
                                             </Badge>
                                           </TableCell>
                                           <TableCell className="text-center">
