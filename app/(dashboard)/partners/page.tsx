@@ -60,6 +60,7 @@ interface PartnerProfit {
   month: number;
   year: number;
   profit: number;
+  numberOfDays?: number;
   createdAt: string;
 }
 
@@ -107,6 +108,7 @@ const defaultProfitForm = {
   profit: "",
   month: currentMonth,
   year: currentYear,
+  numberOfDays: "",
 };
 
 // ─── Helper: read persisted tab safely (SSR-safe) ─────────────────────────────
@@ -323,6 +325,7 @@ export default function PartnersManagementPage() {
         profit: profit.profit.toString(),
         month: profit.month,
         year: profit.year ?? currentYear,
+        numberOfDays: profit.numberOfDays?.toString() ?? "",
       });
     } else {
       setSelectedProfit(null);
@@ -360,6 +363,7 @@ export default function PartnersManagementPage() {
           profit: parseFloat(profitForm.profit),
           year: Number(profitForm.year),
           month: Number(profitForm.month),
+          ...(profitForm.numberOfDays !== "" && { numberOfDays: Number(profitForm.numberOfDays) }),
         }),
       });
 
@@ -635,11 +639,11 @@ export default function PartnersManagementPage() {
                   </Button>
                 </div>
               ) : (
-                <Table>
+                <Table dir="rtl">
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
-                      <TableHead className="text-right font-semibold">الاسم</TableHead>
-                      <TableHead className="text-right font-semibold">
+                      <TableHead className="font-semibold">الاسم</TableHead>
+                      <TableHead className="font-semibold">
                         إجمالي الربح
                         {filterMonth !== undefined && filterYear !== undefined && (
                           <span className="font-normal text-muted-foreground text-xs mr-1">
@@ -647,7 +651,7 @@ export default function PartnersManagementPage() {
                           </span>
                         )}
                       </TableHead>
-                      <TableHead className="text-right font-semibold w-24">الإجراءات</TableHead>
+                      <TableHead className="font-semibold w-24 text-center">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -655,8 +659,8 @@ export default function PartnersManagementPage() {
                       const total = getFilteredTotalProfit(partner._id);
                       return (
                         <TableRow key={partner._id} className="group">
-                          <TableCell className="font-medium text-right">{partner.name}</TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="font-medium">{partner.name}</TableCell>
+                          <TableCell>
                             <Badge
                               variant={total > 0 ? "default" : "secondary"}
                               className="font-mono tabular-nums"
@@ -664,8 +668,8 @@ export default function PartnersManagementPage() {
                               {total.toFixed(2)} ج.م
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                          <TableCell>
+                            <div className="flex gap-1 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -725,29 +729,33 @@ export default function PartnersManagementPage() {
                   </Button>
                 </div>
               ) : (
-                <Table>
+                <Table dir="rtl">
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
-                      <TableHead className="text-right font-semibold">الشريك</TableHead>
-                      <TableHead className="text-right font-semibold">الشهر / السنة</TableHead>
-                      <TableHead className="text-right font-semibold">النشاط</TableHead>
-                      <TableHead className="text-right font-semibold">الربح</TableHead>
-                      <TableHead className="text-right font-semibold w-24">الإجراءات</TableHead>
+                      <TableHead className="font-semibold">الشريك</TableHead>
+                      <TableHead className="font-semibold">الشهر / السنة</TableHead>
+                      <TableHead className="font-semibold">النشاط</TableHead>
+                      <TableHead className="font-semibold">عدد الأيام</TableHead>
+                      <TableHead className="font-semibold">الربح</TableHead>
+                      <TableHead className="font-semibold w-24 text-center">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredProfits.map((profit) => (
                       <TableRow key={profit._id} className="group">
-                        <TableCell className="font-medium text-right">
+                        <TableCell className="font-medium">
                           {getPartnerName(profit.partner)}
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
+                        <TableCell className="text-muted-foreground">
                           {months[profit.month]} {profit.year ?? "—"}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                           <Badge variant="outline">{getActivityName(profit.activity)}</Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-muted-foreground">
+                          {profit.numberOfDays ?? "—"}
+                        </TableCell>
+                        <TableCell>
                           <Badge
                             variant={profit.profit >= 0 ? "default" : "destructive"}
                             className="font-mono tabular-nums"
@@ -755,8 +763,8 @@ export default function PartnersManagementPage() {
                             {profit.profit.toFixed(2)} ج.م
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <TableCell>
+                          <div className="flex gap-1 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <Button
                               variant="ghost"
                               size="icon"
@@ -892,6 +900,19 @@ export default function PartnersManagementPage() {
                   ج.م
                 </span>
               </div>
+            </div>
+
+            {/* Number of Days */}
+            <div className="grid gap-2">
+              <Label htmlFor="profit-days">عدد الأيام (اختياري)</Label>
+              <Input
+                id="profit-days"
+                type="number"
+                min="1"
+                value={profitForm.numberOfDays}
+                onChange={(e) => setProfitForm({ ...profitForm, numberOfDays: e.target.value })}
+                placeholder="—"
+              />
             </div>
 
             {/* Month + Year */}
