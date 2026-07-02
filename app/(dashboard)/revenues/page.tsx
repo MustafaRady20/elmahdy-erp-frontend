@@ -626,6 +626,12 @@ export default function RevenuePage() {
 
   const getTotalRevenue = () => data.reduce((sum, emp) => sum + emp.total, 0);
 
+  const getActiveCurrencyLabel = () => {
+    if (!filterCurrency) return "جنيه";
+    const c = currencies.find((c) => c._id === filterCurrency);
+    return c ? c.code : "جنيه";
+  };
+
   const getPeriodLabel = (p: Period = period) => {
     const labels: Record<Period, string> = {
       daily: "يومي",
@@ -813,7 +819,7 @@ export default function RevenuePage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
-                {getTotalRevenue().toLocaleString()} جنيه
+                {getTotalRevenue().toLocaleString()} {getActiveCurrencyLabel()}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">إجمالي إيرادات جميع الموظفين</p>
             </CardContent>
@@ -1098,7 +1104,7 @@ export default function RevenuePage() {
                           <span className="font-bold text-emerald-600 dark:text-emerald-400 text-lg">
                             {emp?.total?.toLocaleString()}
                           </span>
-                          <span className="text-slate-500 dark:text-slate-500 text-sm mr-1">جنيه</span>
+                          <span className="text-slate-500 dark:text-slate-500 text-sm mr-1">{getActiveCurrencyLabel()}</span>
                         </TableCell>
                         <TableCell className="text-center">
                           <Dialog>
